@@ -1,0 +1,55 @@
+# Importing necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+
+# Sample dataset containing comments and their toxicity labels
+data = {
+    'comment_text': [
+        "You're an idiot!",
+        "Thanks for the helpful explanation.",
+        "I hope you fail miserably.",
+        "Great job!",
+        "You should be ashamed of yourself.",
+        "I completely disagree with your opinion.",
+        "You're a worthless piece of trash.",
+        "Keep up the good work!",
+        "I wish you the best of luck.",
+        "You're so dumb!"
+    ],
+    'toxicity': [
+        1,  # Toxic
+        0,  # Non-toxic
+        1,  # Toxic
+        0,  # Non-toxic
+        1,  # Toxic
+        0,  # Non-toxic
+        1,  # Toxic
+        0,  # Non-toxic
+        0,  # Non-toxic
+        1   # Toxic
+    ]
+}
+
+# Creating a DataFrame from the sample dataset
+df = pd.DataFrame(data)
+
+# Splitting the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(df['comment_text'], df['toxicity'], test_size=0.2, random_state=42)
+
+# Vectorizing the comment text using TF-IDF
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+
+# Training a Logistic Regression classifier
+classifier = LogisticRegression()
+classifier.fit(X_train_tfidf, y_train)
+
+# Predicting toxicity labels for test data
+y_pred = classifier.predict(X_test_tfidf)
+
+# Evaluating the classifier
+print(classification_report(y_test, y_pred))
