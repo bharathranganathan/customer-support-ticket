@@ -1,0 +1,55 @@
+# Importing necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import classification_report
+
+# Sample dataset containing emails and their labels (spam or legitimate)
+data = {
+    'email_text': [
+        "Congratulations! You've won a free vacation!",
+        "Please review the attached document at your earliest convenience.",
+        "Get rich quick with our amazing investment opportunity!",
+        "Reminder: Your appointment is scheduled for tomorrow.",
+        "Claim your prize now by clicking the link below!",
+        "Meeting agenda for next week's conference attached.",
+        "Limited time offer: Buy one, get one free!",
+        "Invoice for recent purchase attached.",
+        "Urgent: Your account requires immediate attention.",
+        "You've been selected for a special discount, act now!"
+    ],
+    'label': [
+        'spam',
+        'legitimate',
+        'spam',
+        'legitimate',
+        'spam',
+        'legitimate',
+        'spam',
+        'legitimate',
+        'spam',
+        'spam'
+    ]
+}
+
+# Creating a DataFrame from the sample dataset
+df = pd.DataFrame(data)
+
+# Splitting the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(df['email_text'], df['label'], test_size=0.2, random_state=42)
+
+# Vectorizing the email text using TF-IDF
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)
+X_test_tfidf = tfidf_vectorizer.transform(X_test)
+
+# Training a Multinomial Naive Bayes classifier
+classifier = MultinomialNB()
+classifier.fit(X_train_tfidf, y_train)
+
+# Predicting labels for test data
+y_pred = classifier.predict(X_test_tfidf)
+
+# Evaluating the classifier
+print(classification_report(y_test, y_pred))
