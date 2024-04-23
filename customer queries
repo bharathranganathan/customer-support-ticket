@@ -1,0 +1,65 @@
+# Importing necessary libraries
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM, Embedding
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+# Sample dataset containing customer queries and their corresponding responses
+data = {
+    'query': [
+        "How can I track my order?",
+        "What is your return policy?",
+        "I need help with my account.",
+        "How do I contact customer support?",
+        "Do you offer international shipping?"
+    ],
+    'response': [
+        "You can track your order by logging into your account.",
+        "Our return policy allows returns within 30 days of purchase.",
+        "Please provide more details about the issue with your account.",
+        "You can contact customer support at support@example.com.",
+        "Yes, we offer international shipping to most countries."
+    ]
+}
+
+# Creating a DataFrame from the sample dataset
+df = pd.DataFrame(data)
+
+# Tokenizing the text data
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(df['query'].values)
+vocab_size = len(tokenizer.word_index) + 1
+
+# Converting text data to sequences
+sequences = tokenizer.texts_to_sequences(df['query'].values)
+max_sequence_length = max([len(x) for x in sequences])
+
+# Padding sequences to ensure uniform length
+padded_sequences = pad_sequences(sequences, maxlen=max_sequence_length, padding='post')
+
+# Building the model
+model = Sequential([
+    Embedding(vocab_size, 100, input_length=max_sequence_length),
+    LSTM(100),
+    Dense(vocab_size, activation='softmax')
+])
+
+model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Training the model
+model.fit(padded_sequences, np.array(df['response'].index), epochs=100, verbose=2)
+
+# Function to generate response
+def generate_response(query):
+    sequence = tokenizer.texts_to_sequences([query])
+    padded_sequence = pad_sequences(sequence, maxlen=max_sequence_length, padding='post')
+    prediction = model.predict(padded_sequence)
+    response_index = np.argmax(prediction)
+    return df['response'].iloc[response_index]
+
+# Test the chatbot
+query = "How do I track my order?"
+response = generate_response(query)
+print(response
